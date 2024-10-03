@@ -7,3 +7,6 @@ Landsat missions have provided the longest continuous dataset of remotely sensed
 - python -m venv venv
 - .\venv\Scripts\Activate
 - pip install -r requirements.txt
+
+# Roda #
+- python python.py
