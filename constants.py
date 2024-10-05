@@ -4,7 +4,9 @@ BANDS = ['SR_B5', 'SR_B6', 'SR_B4']
 START_DATE = '2020-01-01' 
 END_DATE = '2023-12-31'
 
-CITY = {"Natal": [-35.2086, -5.79448]}
+CITY = {}
+
+#CITY_JSON = {"Natal": (-35.2086, -5.79448)}
 
 LOC = {
     "Rio Branco": [-67.8243, -9.97499],

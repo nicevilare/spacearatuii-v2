@@ -1,5 +1,6 @@
 from flask import Flask, jsonify, render_template, request
 import cv2 as cv
+from PIL import Image
 import numpy as np
 import rasterio
 import time
@@ -12,15 +13,14 @@ from constants import LOC, IMAGE_COLLECTION, BANDS, START_DATE, END_DATE, CITY
 
 import quickstart 
 
-from pydrive.auth import GoogleAuth
-from pydrive.drive import GoogleDrive
+
 
 # BANDS = ', '.join(f"'{band}'" for band in BANDS)
 
 path = 'img'
 file_id = ''
 
-print(BANDS)
+# print(BANDS)
 
 app = Flask(__name__)
 
@@ -52,16 +52,20 @@ def index():
                 .filterDate(START_DATE, END_DATE) \
                 .median()
       one_city = one_city.merge(landsat_image)
-
-   export_to_drive(landsat_image, 'Natal')
    
-   name= 'Landsat_Image_Export' + '_Landsat_Img_.tif'
-   print(name)
-   download_img(quickstart.main(name))
+   
+
+   if CITY:
+    export_to_drive(landsat_image, 'Natal')
+    name= 'Landsat_Image_Export' + '_Landsat_Img_.tif'
+    print(name)
+    download_img(quickstart.main(name))
 
 
    Map.addLayer(all_cities if not CITY else one_city, {'bands': BANDS, 'min': 1000, 'max': 30000}, 'Landsat RGB')
    Map.setCenter(-47.9292, -15.7801, 4)  # Longitude, Latitude, Zoom level
+
+
 
    map_html = Map.to_html()  
 
@@ -84,7 +88,7 @@ def export_to_drive(img, folder):
    """
    export landsat image to drive 
    """
-   task = ee.batch.Export.image.toDrive(image=img.select(BANDS), description='Landsat_Image_Export' + f'_{folder}_', scale=30, region=ee.Geometry.Point(list(CITY.values())[0]), maxPixels=1e13,  folder=folder, fileFormat='GeoTIFF')
+   task = ee.batch.Export.image.toDrive(image=img.select(BANDS), description='Landsat_Image_Export' + f'_{folder}_', scale=1000, region=ee.Geometry.Point(list(CITY.values())[0]), maxPixels=1e13,  folder=folder, fileFormat='GeoTIFF')
    task.start()
    while task.active():
     print('Exporting... Status:', task.status())
@@ -105,6 +109,8 @@ def download_img(id):
    url = 'https://drive.google.com/uc?id=' + id
    # https://drive.google.com/file/d/1ZUN3Cr_ERRKQI4O8BrEX1AyyasPj6frh/view?usp=drive_link
    gdown.download(url, 'landsat_image.tif', quiet=False)
+   if os.path.exists('img/landsat_image.tif'):
+      os.remove(os.path.join('img', 'landsat_image.tif'))
    shutil.move('landsat_image.tif', 'img')
    convert_to_png('img/landsat_image.tif')
 
@@ -120,7 +126,86 @@ def convert_to_png(name):
    first_band_array = cv.normalize(first_band_array, None, 0, 255, cv.NORM_MINMAX)
    first_band_array = first_band_array.astype(np.uint8)
    cv.imwrite('img/landsat_img_converted.png', first_band_array)
+   
+
+
  
 
 if __name__ == '__main__':
     app.run(debug=True)
+
+"""
+center_point = ee.Geometry.Point(list(CITY.values())[0])
+      print(center_point)
+      geometry = center_point.buffer(45).bounds()
+      sample = landsat_image.sample({
+      'region': geometry,  # Region size corresponding to 3x3 pixels
+      'scale': 30,         # Landsat native scale in meters
+      'numPixels': 9       # Sampling exactly 9 pixels
+      })
+      print(sample.getInfo()) 
+      sample_fc = ee.FeatureCollection(sample)
+      one_city = one_city.merge(sample_fc
+
+"""
+
+"""
+   print(landsat_image.getInfo())
+
+   pixel_area_image = ee.Image.pixelArea()
+
+   valid_area_image = pixel_area_image.updateMask(landsat_image.mask())
+
+   total_area = valid_area_image.reduceRegion(
+    reducer=ee.Reducer.sum(),
+    geometry=region_of_interest,
+    scale=30,  # Landsat 8 pixel scale (30 meters)
+    maxPixels=1e9
+)
+   
+   total_area_m2 = total_area.get('area').getInfo()
+
+   total_area_km2 = total_area_m2 / 1e6
+   print(f'Total area: {total_area_km2} km²')
+
+### Calculating the number of pixels
+# Reduce over region of interest to count the number of pixels
+   pixel_count = landsat_image.reduceRegion( 
+     reducer=ee.Reducer.count(),
+    geometry=region_of_interest,
+    scale=30,
+    maxPixels=1e9
+).get('B1').getInfo()  # Use band 1 ('B1') for pixel count
+
+   print(f'Total number of pixels: {pixel_count}')
+
+
+   print(f'\n\n\n{landsat_image.getInfo()}')
+"""
+
+
+"""
+
+   tiff_image = Image.open("img/landsat_image.tif")
+   jpeg_image = tiff_image.convert("RGB")
+   jpeg_image.save("example.jpg")
+
+
+   img = cv.imread('img/landsat_image_converted.png', cv.IMREAD_UNCHANGED)
+
+# Check the max and min values of the image
+   print(f'Min pixel value: {np.min(img)}')
+   print(f'Max pixel value: {np.max(img)}')
+
+# Normalize the image to [0, 255] for display
+   img_normalized = cv.normalize(img, None, 0, 255, cv.NORM_MINMAX)
+
+# Convert to uint8 (standard 8-bit image depth for display)
+   img_normalized = img_normalized.astype(np.uint8)
+
+# Save or display the normalized image
+   cv.imwrite('normalized_landsat_image.png', img_normalized)
+   cv.imshow('Normalized Image', img_normalized)
+   cv.waitKey(0)
+   cv.destroyAllWindows()
+"""
