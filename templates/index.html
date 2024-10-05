@@ -4,9 +4,32 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Mapa com Formulário</title>
+    <link rel="stylesheet" href="static/style.css">
 </head>
-<body>
-    <h1>Mapa Interativo</h1>
+<body class="body-map">
+
+    <!-- Top Navigation Bar -->
+    <div class="nav-bar top-nav">
+        <button class="btn-class-name">
+            <span class="back"></span>
+            <span class="front"></span>
+        </button>
+        <button class="btn-class-name">
+            <span class="back"></span>
+            <span class="front"></span>
+        </button>
+        <button class="btn-class-name">
+            <span class="back"></span>
+            <span class="front"></span>
+        </button>
+    </div>
+
+    {% if map %}
+    <div id="map" class="teste"></div>
+    {% endif %}
     <div id="map">{{ map_html|safe }}</div> 
+    <div class="">
+        <button class="button">Mapa</button>
+    </div>    
 </body>
 </html>
