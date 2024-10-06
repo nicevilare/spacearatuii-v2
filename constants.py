@@ -4,7 +4,7 @@ BANDS = ['SR_B4']
 START_DATE = '2020-01-01' 
 END_DATE = '2023-12-31'
 
-CITY = {"Natal": [-35.2086, -5.79448]}
+CITY = {"Recife": [-34.8813, -8.0476]}
 
 #CITY_JSON = {"Natal": (-35.2086, -5.79448)}
 

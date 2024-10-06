@@ -3,12 +3,23 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Mapa com Formulário</title>
+    <link rel="stylesheet" href="static/style.css">
+    <script src="static/script.js"></script>
+    <title>Landsat</title>
 </head>
 <body>
-    <form>
-        
-    </form>
+    <div class="form-container">
+        <div>
+            <label for="longitude">Longitude:</label>
+            <input type="text" id="longitude" name="longitude">
+            <label for="latitude">Latitude:</label>
+            <input type="text" id="latitude" name="latitude">
+            <input id="dateInicio" type="date" />
+            <input id="dateFim" type="date" />
+            <button onclick="buscar()">Buscar</button>
+        </div>
+    </div>
+   
     <div id="map">{{ map_html|safe }}</div> 
 
 </body>

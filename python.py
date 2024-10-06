@@ -27,11 +27,22 @@ ee.Authenticate(auth_mode='localhost', scopes=[
 
 ee.Initialize(project='aratu-436806')
 
-@app.route('/')
+@app.route('/', methods=["POST", "GET"])
 def index():
-
+   if request.method == 'POST':
+        data = request.get_json()
+        longitude = data.get('longitude')
+        latitude = data.get('latitude')
+        date_inicio = data.get('dateInicio')
+        date_fim = data.get('dateFim')       
+   else:
+      longitude = -34.8813
+      latitude = -8.0476
+      date_inicio = '2020-01-01'
+      date_fim = '2023-12-31'
    Map = geemap.Map()
 
+   print(list(CITY.values())[0])
    all_cities = ee.ImageCollection([])
    one_city = ee.ImageCollection([])
    if not CITY:
@@ -91,7 +102,7 @@ def index():
     pass
 
    Map.addLayer(all_cities if not CITY else one_city, {'bands': BANDS, 'min': 1000, 'max': 30000}, 'Landsat RGB')
-   Map.setCenter(-35.2086, -5.79448, 12)  # Longitude, Latitude, Zoom level
+   Map.setCenter(-34.8813, -8.0476, 12)  # Longitude, Latitude, Zoom level
 
    map_html = Map.to_html()  
 
