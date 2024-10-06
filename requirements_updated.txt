@@ -27,7 +27,6 @@ folium==0.17.0
 fonttools==4.54.1
 future==1.0.0
 gdown==5.2.0
-geemap==0.34.5
 geocoder==1.38.1
 google-api-core==2.20.0
 google-api-python-client==2.147.0
