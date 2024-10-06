@@ -14,6 +14,8 @@ from constants import LOC, IMAGE_COLLECTION, BANDS, START_DATE, END_DATE, CITY
 import quickstart 
 import test_dates # a = test_dates.get_dates(coord)
 
+global coord_get
+
 path = 'img'
 file_id = ''
 
@@ -25,16 +27,30 @@ ee.Authenticate(auth_mode='localhost', scopes=[
     'https://www.googleapis.com/auth/userinfo.email'
 ])
 
-ee.Initialize(project='aratu-436806')
+ee.Initialize(project='testearthengine-437300')
 
 @app.route('/', methods=["POST", "GET"])
 def index():
+   
+   global coord_get
+   coord_get = {}
    if request.method == 'POST':
-        data = request.get_json()
+        
+        #data = request.get_json()
+
+        data = request.get_json()  # Parse the incoming JSON data
+
+        #return jsonify({"success": True, "message": "Data received", "data": data})
+
         longitude = data.get('longitude')
         latitude = data.get('latitude')
         date_inicio = data.get('dateInicio')
-        date_fim = data.get('dateFim')       
+        date_fim = data.get('dateFim') 
+        coord_get = {"new": [float(longitude), float(latitude)]} 
+        #print(coord_get)
+        #print(list(coord_get.values())[0])
+        #print(data)
+        #print(latitude, longitude, date_inicio, date_fim)     
    else:
       longitude = -34.8813
       latitude = -8.0476
@@ -42,7 +58,6 @@ def index():
       date_fim = '2023-12-31'
    Map = geemap.Map()
 
-   print(list(CITY.values())[0])
    all_cities = ee.ImageCollection([])
    one_city = ee.ImageCollection([])
    if not CITY:
@@ -53,13 +68,13 @@ def index():
                 .median()
         all_cities = all_cities.merge(landsat_image)
    else:
-      
-      bounds = ee.Geometry.Point(list(CITY.values())[0]).buffer(30*30).bounds().getInfo()['coordinates'][0]
+
+      bounds = ee.Geometry.Point(list(CITY.values())[0] if not coord_get else list(coord_get.values())[0]).buffer(30*30).bounds().getInfo()['coordinates'][0]
       
       rect = create_rectangles(bounds=bounds)
 
       landsat_image = ee.ImageCollection(IMAGE_COLLECTION) \
-                .filterBounds(ee.Geometry.Point(list(CITY.values())[0]).buffer(30*30)) \
+                .filterBounds(ee.Geometry.Point(list(CITY.values())[0] if not coord_get else list(coord_get.values())[0]).buffer(30*30)) \
                 .filterDate(START_DATE, END_DATE) \
                 .median() \
                 .clip(rect[8]) # ee.Geometry.Point(list(CITY.values())[0].buffer(30*30)
