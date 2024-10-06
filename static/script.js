@@ -1,25 +1,27 @@
-function buscar(){
-    const param ={
-        longitude : document.getElementById("longitude").value,
-        latitude : document.getElementById("latitude").value,
-        dateInicio : document.getElementById("dateInicio").value,
-        dateFim : document.getElementById("dateFim").value        
+function buscar() {
+    const param = {
+        longitude: document.getElementById("longitude").value,
+        latitude: document.getElementById("latitude").value,
+        dateInicio: document.getElementById("dateInicio").value,
+        dateFim: document.getElementById("dateFim").value        
     }
+
     fetch('/', {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json'
         },
-        body: param
+        body: JSON.stringify(param)  // Convert param to a JSON string
     })
     .then(response => {
-        console.log(response)
-        response.json()})    
+        return response.json();
+    })
+    .then(data => {
+        console.log(data);
+    })
     .catch((error) => {
         console.error('Erro:', error);
     });
-
-
 }
 
 
