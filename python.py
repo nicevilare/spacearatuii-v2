@@ -16,8 +16,6 @@ import test_dates # a = test_dates.get_dates(coord)
 
 path = 'img'
 file_id = ''
-mapa = False
-tela = True
 
 app = Flask(__name__)
 
@@ -29,80 +27,76 @@ ee.Authenticate(auth_mode='localhost', scopes=[
 
 ee.Initialize(project='aratu-436806')
 
-@app.route('/', methods=['GET', 'POST'])
+@app.route('/')
 def index():
-   global mapa  
 
-   if request.method == 'POST':
-        data = request.get_json() 
-        mapa = data['mapa']  
-        if mapa :
-            Map = geemap.Map()
+   Map = geemap.Map()
 
-            all_cities = ee.ImageCollection([])
-            one_city = ee.ImageCollection([])
-            if not CITY:
-               for _, coord in LOC.items():
-                  landsat_image = ee.ImageCollection(IMAGE_COLLECTION) \
-                        .filterBounds(ee.Geometry.Point(coord)) \
-                        .filterDate(START_DATE, END_DATE) \
-                        .median()
-               all_cities = all_cities.merge(landsat_image)
-            else:
-               
-               bounds = ee.Geometry.Point(list(CITY.values())[0]).buffer(30*30).bounds().getInfo()['coordinates'][0]
-               
-               rect = create_rectangles(bounds=bounds)
+   all_cities = ee.ImageCollection([])
+   one_city = ee.ImageCollection([])
+   if not CITY:
+       for _, coord in LOC.items():
+        landsat_image = ee.ImageCollection(IMAGE_COLLECTION) \
+                .filterBounds(ee.Geometry.Point(coord)) \
+                .filterDate(START_DATE, END_DATE) \
+                .median()
+        all_cities = all_cities.merge(landsat_image)
+   else:
+      
+      bounds = ee.Geometry.Point(list(CITY.values())[0]).buffer(30*30).bounds().getInfo()['coordinates'][0]
+      
+      rect = create_rectangles(bounds=bounds)
 
-               landsat_image = ee.ImageCollection(IMAGE_COLLECTION) \
-                        .filterBounds(ee.Geometry.Point(list(CITY.values())[0]).buffer(30*30)) \
-                        .filterDate(START_DATE, END_DATE) \
-                        .median() \
-                        .clip(rect[8]) # ee.Geometry.Point(list(CITY.values())[0].buffer(30*30)
-               
-               one_city = one_city.merge(landsat_image)
-               for k in range(0, len(rect)-1):
-                  landsat_image = ee.ImageCollection(IMAGE_COLLECTION) \
-                        .filterBounds(rect[k]) \
-                        .filterDate(START_DATE, END_DATE) \
-                        .median() \
-                        .clip(rect[k])
-                  one_city = one_city.merge(landsat_image)
+      landsat_image = ee.ImageCollection(IMAGE_COLLECTION) \
+                .filterBounds(ee.Geometry.Point(list(CITY.values())[0]).buffer(30*30)) \
+                .filterDate(START_DATE, END_DATE) \
+                .median() \
+                .clip(rect[8]) # ee.Geometry.Point(list(CITY.values())[0].buffer(30*30)
+      
+      one_city = one_city.merge(landsat_image)
+      for k in range(0, len(rect)-1):
+         landsat_image = ee.ImageCollection(IMAGE_COLLECTION) \
+                .filterBounds(rect[k]) \
+                .filterDate(START_DATE, END_DATE) \
+                .median() \
+                .clip(rect[k])
+         one_city = one_city.merge(landsat_image)
 
-               landsat_data = one_city.getInfo()
-               file_data = get_csv(landsat_data)
+      landsat_data = one_city.getInfo()
+      file_data = get_csv(landsat_data)
 
-               cloud_cover = one_city.get('CLOUD_COVER').getInfo()
-               cloud_cover_land = one_city.get('CLOUD_COVER_LAND').getInfo()
-               collection_category = one_city.get('COLLECTION_CATEGORY').getInfo()
-               image_quality_oli = one_city.get('IMAGE_QUALITY_OLI').getInfo()
-               image_quality_tirs = one_city.get('IMAGE_QUALITY_TIRS').getInfo()
+      cloud_cover = one_city.get('CLOUD_COVER').getInfo()
+      cloud_cover_land = one_city.get('CLOUD_COVER_LAND').getInfo()
+      collection_category = one_city.get('COLLECTION_CATEGORY').getInfo()
+      image_quality_oli = one_city.get('IMAGE_QUALITY_OLI').getInfo()
+      image_quality_tirs = one_city.get('IMAGE_QUALITY_TIRS').getInfo()
 
-               #print(f'\n\n{cloud_cover}\n\n{cloud_cover_land}\n\n{collection_category}\n\n{image_quality_oli}\n\n{image_quality_tirs}\n\n')
+      #print(f'\n\n{cloud_cover}\n\n{cloud_cover_land}\n\n{collection_category}\n\n{image_quality_oli}\n\n{image_quality_tirs}\n\n')
 
-               export_image_props(landsat_image.getInfo()['properties'])
+      export_image_props(landsat_image.getInfo()['properties'])
 
-               with open('csv_file.csv', mode='w', newline='') as file:
-                  writer = csv.writer(file)
-                  writer.writerow(file_data.keys())
-                  writer.writerow(file_data.values())
+      with open('csv_file.csv', mode='w', newline='') as file:
+        writer = csv.writer(file)
+        writer.writerow(file_data.keys())
+        writer.writerow(file_data.values())
 
-               quickstart.upload_basic()
-            
+      quickstart.upload_basic()
+    
 
+   if CITY:
+    #export_to_drive(landsat_image, 'Natal')
+    #name= 'Landsat_Image_Export' + '_Landsat_Img_.tif'
+    #print(name)
+    #download_img(quickstart.main(name))
+    pass
 
-               Map.addLayer(all_cities if not CITY else one_city, {'bands': BANDS, 'min': 1000, 'max': 30000}, 'Landsat RGB')
-               Map.setCenter(-35.2086, -5.79448, 12)  # Longitude, Latitude, Zoom level
+   Map.addLayer(all_cities if not CITY else one_city, {'bands': BANDS, 'min': 1000, 'max': 30000}, 'Landsat RGB')
+   Map.setCenter(-35.2086, -5.79448, 12)  # Longitude, Latitude, Zoom level
 
-               map_html = Map.to_html()  
+   map_html = Map.to_html()  
 
-               return render_template('index.html', map_html=map_html, mapa=mapa, tela=tela) 
-        else :                 
-            return render_template('index.html', map_html=None, mapa=mapa, tela=tela) 
-         
-   else : 
-                      
-      return render_template('index.html', map_html=None, mapa=mapa, tela=tela) 
+   return render_template('index.html', map_html=map_html)
+
 
 def create_dir(name, img):
     """
