@@ -3,11 +3,10 @@ body {
 }
 
 .form-container {
-    display: flex;               /* Habilita o uso de Flexbox */
-    justify-content: space-between; /* Distribui os campos com espaço entre eles */
-    align-items: center;        /* Alinha verticalmente os itens ao centro */
-    gap: 10px;                  /* Espaçamento entre os campos */
-    padding: 20px;              /* Espaçamento interno */
+    display: flex;
+    flex-direction: column; 
+    margin-bottom: 50px;
+    margin-top: 20px; 
 }
 
 input {
