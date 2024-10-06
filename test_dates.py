@@ -2,7 +2,7 @@ from selenium import webdriver
 from selenium.webdriver.common.by import By
 
 
-def get_dates(coord): # format: [value, value]
+def get_dates(coord): # format: [value, value] test_dates.get_dates(list(CITY.values())[0][1], list(CITY.values())[0][0])
     lat = coord[1]
     long = coord[0]
 
