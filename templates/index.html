@@ -7,22 +7,25 @@
     <script src="static/script.js"></script>
     <title>Landsat</title>
 </head>
-<body>
+<body style="background-color: rgb(148, 136, 226);">
     <div class="form-container">
         <div>
-            <label for="longitude">Longitude:</label>
+            <label for="longitude" style="font-weight: bold;" placeholder="Longitude">Longitude:</label>
             <input type="text" id="longitude" name="longitude">
-            <label for="latitude">Latitude:</label>
+            <label for="latitude" style="font-weight: bold;" placeholder="Latitude">Latitude:</label>
             <input type="text" id="latitude" name="latitude">
-            <label for="DataInicio">Data Inicio:</label>
+            <label for="DataInicio" style="font-weight: bold;" placeholder="Start Date">Start Date:</label>
             <input id="dateInicio" type="date" />
-            <label for="DataFim">Data Inicio:</label>
+            <label for="DataFim" style="font-weight: bold;" placeholder="End Date">End Date:</label>
             <input id="dateFim" type="date" />
-            <button onclick="buscar()">Buscar</button>
+            <button onclick="buscar()">Search</button>
+            <img src="static/images/landscience.png" alt="" style="position: absolute; width: 80px; margin-left: 200px;">
         </div>
     </div>
-   
+    <div>
+        When searching, data relating to Landsat SR will be sent to the logged in account.  
+     </div>
     <div id="map">{{ map_html|safe }}</div> 
-
+    
 </body>
 </html>

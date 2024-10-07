@@ -5,7 +5,7 @@ body {
 .form-container {
     display: flex;
     flex-direction: column; 
-    margin-bottom: 50px;
+    margin-bottom: 30px;
     margin-top: 20px; 
 }
 
@@ -19,7 +19,7 @@ input {
 
 button {
     padding: 10px 20px;        /* Espaçamento interno do botão */
-    background-color: #007BFF; /* Cor de fundo do botão */
+    background-color: #16181a; /* Cor de fundo do botão */
     color: white;               /* Cor do texto do botão */
     border: none;               /* Sem borda */
     border-radius: 4px;        /* Bordas arredondadas */

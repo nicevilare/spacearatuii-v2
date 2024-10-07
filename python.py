@@ -12,6 +12,8 @@ import geemap
 import gdown
 from constants import LOC, IMAGE_COLLECTION, BANDS, START_DATE, END_DATE, CITY
 import quickstart 
+from bs4 import BeautifulSoup
+
 import test_dates # a = test_dates.get_dates(coord)
 
 global coord_get
@@ -30,27 +32,18 @@ ee.Authenticate(auth_mode='localhost', scopes=[
 ee.Initialize(project='testearthengine-437300')
 
 @app.route('/', methods=["POST", "GET"])
-def index():
-   
+def index():       
    global coord_get
    coord_get = {}
    if request.method == 'POST':
         
-        #data = request.get_json()
-
-        data = request.get_json()  # Parse the incoming JSON data
-
-        #return jsonify({"success": True, "message": "Data received", "data": data})
+        data = request.get_json()  
 
         longitude = data.get('longitude')
         latitude = data.get('latitude')
         date_inicio = data.get('dateInicio')
         date_fim = data.get('dateFim') 
         coord_get = {"new": [float(longitude), float(latitude)]} 
-        #print(coord_get)
-        #print(list(coord_get.values())[0])
-        #print(data)
-        #print(latitude, longitude, date_inicio, date_fim)     
    else:
       longitude = -34.8813
       latitude = -8.0476
@@ -68,7 +61,6 @@ def index():
                 .median()
         all_cities = all_cities.merge(landsat_image)
    else:
-
       bounds = ee.Geometry.Point(list(CITY.values())[0] if not coord_get else list(coord_get.values())[0]).buffer(30*30).bounds().getInfo()['coordinates'][0]
       
       rect = create_rectangles(bounds=bounds)
@@ -97,7 +89,6 @@ def index():
       image_quality_oli = one_city.get('IMAGE_QUALITY_OLI').getInfo()
       image_quality_tirs = one_city.get('IMAGE_QUALITY_TIRS').getInfo()
 
-      #print(f'\n\n{cloud_cover}\n\n{cloud_cover_land}\n\n{collection_category}\n\n{image_quality_oli}\n\n{image_quality_tirs}\n\n')
 
       export_image_props(landsat_image.getInfo()['properties'])
 
@@ -106,23 +97,14 @@ def index():
         writer.writerow(file_data.keys())
         writer.writerow(file_data.values())
 
-      quickstart.upload_basic()
-    
-
-   if CITY:
-    #export_to_drive(landsat_image, 'Natal')
-    #name= 'Landsat_Image_Export' + '_Landsat_Img_.tif'
-    #print(name)
-    #download_img(quickstart.main(name))
-    pass
+      quickstart.upload_basic()    
 
    Map.addLayer(all_cities if not CITY else one_city, {'bands': BANDS, 'min': 1000, 'max': 30000}, 'Landsat RGB')
-   Map.setCenter(-34.8813, -8.0476, 12)  # Longitude, Latitude, Zoom level
+   Map.setCenter(-34.8813, -8.085763, 13)  # Longitude, Latitude, Zoom level
 
    map_html = Map.to_html()  
-
+   
    return render_template('index.html', map_html=map_html)
-
 
 def create_dir(name, img):
     """
@@ -131,8 +113,7 @@ def create_dir(name, img):
     if not os.path.exists(path):
       os.path.makedirs(path)
     file_path = path + '/' + name + '.txt'
-#    with open(file_path, 'w') as file:
-#       file.write(str(img))
+
     return file_path
 
 
@@ -159,7 +140,6 @@ def download_img(id):
    download landsat image from gdrive
    """
    url = 'https://drive.google.com/uc?id=' + id
-   # https://drive.google.com/file/d/1ZUN3Cr_ERRKQI4O8BrEX1AyyasPj6frh/view?usp=drive_link
    gdown.download(url, 'landsat_image.tif', quiet=False)
    if os.path.exists('img/landsat_image.tif'):
       os.remove(os.path.join('img', 'landsat_image.tif'))
@@ -173,7 +153,6 @@ def convert_to_png(name):
    """
    with rasterio.open(name) as src:
       img_array = src.read()
-# ta errado mas so como exemplo tem que refazer e eu to cansado
    first_band_array = img_array[0, :, :]
    first_band_array = cv.normalize(first_band_array, None, 0, 255, cv.NORM_MINMAX)
    first_band_array = first_band_array.astype(np.uint8)
